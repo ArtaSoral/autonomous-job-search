@@ -1,0 +1,28 @@
+# Personal candidate data
+/candidate/*
+!/candidate/README.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime data and generated documents
+/data/
+/output/
+/application_packets/
+/logs/
+*.sqlite3
+*.sqlite3-*
+
+# Python and tooling
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+node_modules/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,82 @@
+{
+  "greenhouse": {
+    "jobs": [
+      {
+        "id": 101,
+        "title": "Product Manager",
+        "location": { "name": "Newark, NJ" },
+        "content": "<p>Own product requirements and roadmap.</p>",
+        "absolute_url": "https://job-boards.greenhouse.io/fixture/jobs/101"
+      }
+    ]
+  },
+  "lever": [
+    {
+      "id": "101",
+      "text": "Product Manager",
+      "categories": { "location": "Newark, NJ" },
+      "descriptionPlain": "Own product requirements and roadmap.",
+      "lists": [],
+      "hostedUrl": "https://jobs.lever.co/fixture/101",
+      "applyUrl": "https://jobs.lever.co/fixture/101/apply",
+      "createdAt": 1791457200000
+    }
+  ],
+  "ashby": {
+    "jobs": [
+      {
+        "title": "Product Manager",
+        "location": "Newark, NJ",
+        "descriptionPlain": "Own product requirements and roadmap.",
+        "isListed": true,
+        "jobUrl": "https://jobs.ashbyhq.com/fixture/101",
+        "applyUrl": "https://jobs.ashbyhq.com/fixture/101/application",
+        "publishedAt": "2026-10-08T00:00:00Z"
+      }
+    ]
+  },
+  "smartrecruiters": {
+    "content": [
+      {
+        "id": "101",
+        "name": "Product Manager",
+        "location": { "city": "Newark", "region": "NJ", "country": "US" },
+        "jobAd": {
+          "sections": {
+            "jobDescription": {
+              "text": "<p>Own product requirements and roadmap.</p>"
+            }
+          }
+        },
+        "releasedDate": "2026-10-08T00:00:00Z"
+      }
+    ]
+  },
+  "jsearch": {
+    "data": [
+      {
+        "job_id": "101",
+        "job_title": "Product Manager",
+        "employer_name": "Fixture Manufacturing",
+        "job_city": "Newark",
+        "job_state": "NJ",
+        "job_description": "Own product requirements and roadmap.",
+        "job_apply_link": "https://example.com/jobs/101",
+        "job_posted_at_datetime_utc": "2026-10-08T00:00:00Z"
+      }
+    ]
+  },
+  "adzuna": {
+    "results": [
+      {
+        "id": "101",
+        "title": "Product Manager",
+        "company": { "display_name": "Fixture Manufacturing" },
+        "location": { "display_name": "Newark, NJ" },
+        "description": "Own product requirements and roadmap.",
+        "redirect_url": "https://example.com/jobs/101",
+        "created": "2026-10-08T00:00:00Z"
+      }
+    ]
+  }
+}

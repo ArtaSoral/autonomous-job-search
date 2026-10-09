@@ -1,0 +1,27 @@
+[
+  {
+    "posting": "Tableau specialist required",
+    "bad_claim": "Created reports in Tableau",
+    "guardrail": "g-23"
+  },
+  {
+    "posting": "Build Data Strategy dashboards",
+    "bad_claim": "Built the Data Strategy KPI dashboards",
+    "guardrail": "g-08"
+  },
+  {
+    "posting": "Lead organization-wide Agile transformation",
+    "bad_claim": "Led organization-wide Agile transformation",
+    "guardrail": "g-16"
+  },
+  {
+    "posting": "Own API design and integration engineering",
+    "bad_claim": "Owned API design and integration engineering",
+    "guardrail": "g-20"
+  },
+  {
+    "posting": "Prior shipped AI product required",
+    "bad_claim": "Shipped a production AI product",
+    "guardrail": "g-22"
+  }
+]

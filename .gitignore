@@ -26,3 +26,10 @@ __pycache__/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# Next.js and build output
+.next/
+*.tsbuildinfo
+coverage/
+*.sqlite
+*.sqlite-*

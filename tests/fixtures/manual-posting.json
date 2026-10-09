@@ -1,0 +1,57 @@
+{
+  "employer": "Fixture Manufacturing",
+  "employer_of_record": "Fixture Manufacturing",
+  "client_disclosed": true,
+  "title": "Internal Tools Product Manager",
+  "requisition_id": "fixture-101",
+  "location": {
+    "arrangement": "hybrid",
+    "office_locations": [{ "city": "Newark", "state": "NJ" }],
+    "residency_states": [],
+    "office_days_per_week": 2,
+    "relocation_required": false
+  },
+  "salary": {
+    "min": 125000,
+    "max": 145000,
+    "basis": "base",
+    "currency": "USD"
+  },
+  "employment_type": "full_time",
+  "contract_to_hire_converts_at_hire": null,
+  "travel": "Occasional",
+  "schedule_notes": [],
+  "dealbreaker_signals": {
+    "defense_or_government_customers": "none",
+    "scrum_master_facilitation_share": 0,
+    "pmo_coordination_dominant": false,
+    "people_management_mandatory": false,
+    "sales_primary_outcome": false,
+    "consulting_delivery_without_ownership": false,
+    "security_clearance_required": false
+  },
+  "responsibilities": [
+    { "text": "Own workflow roadmap", "estimated_work_share": 0.25 },
+    {
+      "text": "Translate operational requirements for engineering",
+      "estimated_work_share": 0.25
+    },
+    { "text": "Configure intake automation", "estimated_work_share": 0.25 },
+    {
+      "text": "Help define KPIs and lead adoption",
+      "estimated_work_share": 0.25
+    }
+  ],
+  "required_qualifications": ["Product requirements and workflow design"],
+  "preferred_qualifications": ["Manufacturing experience"],
+  "required_preferred_distinguished": true,
+  "named_tools": ["Jira"],
+  "listing_status_text": "Applications open",
+  "is_agency": false,
+  "client_hires_directly": true,
+  "signal_evidence": {
+    "salary": "Base salary $125,000–$145,000",
+    "location": "Hybrid in Newark NJ",
+    "employment_type": "Full-time"
+  }
+}

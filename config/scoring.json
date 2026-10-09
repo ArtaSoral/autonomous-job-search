@@ -1,0 +1,54 @@
+{
+  "categories": {
+    "core_responsibility": { "weight": 30, "anchors": [30, 24, 18, 9, 0] },
+    "functional_product_capability": {
+      "weight": 20,
+      "anchors": [20, 15, 10, 5, 0]
+    },
+    "product_ownership": { "weight": 12, "anchors": [12, 9, 6, 3, 0] },
+    "workflow_automation": { "weight": 10, "anchors": [10, 7, 4, 2, 0] },
+    "cross_functional": { "weight": 8, "anchors": [8, 6, 3, 1, 0] },
+    "data_kpi_ai": { "weight": 6, "anchors": [6, 4, 2, 1, 0] },
+    "seniority_scope": { "weight": 6, "anchors": [6, 4, 2, 1, 0] },
+    "domain_transferability": { "weight": 5, "anchors": [5, 3, 1, 0] },
+    "ramp_feasibility": { "weight": 3, "anchors": [3, 2, 1, 0] }
+  },
+  "evidence_tier_caps": {
+    "direct": 1,
+    "adjacent": 0.75,
+    "contextual": 0.35,
+    "listed_only": 0.25,
+    "title_only": 0
+  },
+  "classifications": {
+    "excellent": {
+      "min": 88,
+      "core_min": 25,
+      "product_min": 16,
+      "core_matches_min": 4,
+      "work_share_min": 0.75
+    },
+    "strong": {
+      "min": 78,
+      "core_min": 22,
+      "product_min": 14,
+      "core_matches_min": 3,
+      "work_share_min": 0.6
+    },
+    "stretch": {
+      "min": 72,
+      "core_min": 22,
+      "product_min": 14,
+      "core_matches_min": 3,
+      "work_share_min": 0.6
+    },
+    "possible": {
+      "min": 66,
+      "substantive_matches_min": 2,
+      "work_share_min": 0.4
+    }
+  },
+  "confidence": { "high_coverage": 0.85, "medium_coverage": 0.65 },
+  "triage_drop_core_share_below": 0.25,
+  "preference_adjustment_cap": 5
+}

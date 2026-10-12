@@ -10,6 +10,7 @@ import {
   computeEvaluation,
   validateAnchors,
   dedupeCoreMatches,
+  normalizeGuardrailReferences,
 } from "../src/lib/evaluation";
 import scoring from "../config/scoring.json";
 import posting from "./fixtures/manual-posting.json";
@@ -78,6 +79,41 @@ describe("Phase 4 practical filters", () => {
   });
 });
 describe("Phase 4 golden scoring and citations", () => {
+  it("splits known guardrail IDs without changing credit or blocked requirements", () => {
+    const a = fixtureAnchors();
+    a.guardrails_consulted = ["g-08/g-09", "g-08"];
+    a.guardrail_blocked_credit = [
+      { guardrail: "g-15, g-20", posting_requirement: "Build automation" },
+      { guardrail: "g-18 and g-22", posting_requirement: "Ship AI products" },
+    ];
+    const normalized = normalizeGuardrailReferences(a, bank);
+    expect(normalized.guardrails_consulted).toEqual(["g-08", "g-09"]);
+    expect(normalized.guardrail_blocked_credit).toEqual([
+      { guardrail: "g-15", posting_requirement: "Build automation" },
+      { guardrail: "g-20", posting_requirement: "Build automation" },
+      { guardrail: "g-18", posting_requirement: "Ship AI products" },
+      { guardrail: "g-22", posting_requirement: "Ship AI products" },
+    ]);
+    expect(normalized.categories).toEqual(a.categories);
+    expect(() => validateAnchors(normalized, bank)).not.toThrow();
+  });
+  it.each(["g-08/g-999", "g-08/", "g-08: dashboard experience"])(
+    "keeps invalid guardrail reference %s rejected",
+    (reference) => {
+      const a = fixtureAnchors();
+      a.guardrails_consulted = [reference];
+      expect(() =>
+        validateAnchors(normalizeGuardrailReferences(a, bank), bank),
+      ).toThrow("Invalid guardrail");
+      a.guardrails_consulted = [];
+      a.guardrail_blocked_credit = [
+        { guardrail: reference, posting_requirement: "Requirement" },
+      ];
+      expect(() =>
+        validateAnchors(normalizeGuardrailReferences(a, bank), bank),
+      ).toThrow("Invalid guardrail");
+    },
+  );
   it("removes repeated core-match variants without adding replacement evidence", () => {
     const a = fixtureAnchors();
     a.core_matches[1].bank_ids.push(a.core_matches[0].bank_ids[0]);
@@ -144,6 +180,32 @@ describe("Phase 4 golden scoring and citations", () => {
     ];
     expect(() => validateAnchors(a, bank)).toThrow("guardrailed");
   });
+  it.each([
+    ["direct", 5],
+    ["adjacent", 3],
+    ["contextual", 1],
+    ["listed_only", 1],
+    ["title_only", 0],
+  ] as const)(
+    "enforces the whole-point domain ceiling for %s evidence",
+    (tier, max) => {
+      const a = fixtureAnchors();
+      const domain = a.categories.domain_transferability;
+      domain.evidence_tier = tier;
+      domain.points = max;
+      domain.anchor = scoring.categories.domain_transferability.anchors.find(
+        (anchor) => anchor <= max,
+      )!;
+      domain.withheld_reason = max < 5 ? "Evidence-tier ceiling" : null;
+      expect(() => validateAnchors(a, bank)).not.toThrow();
+      if (max < 5) {
+        domain.points = max + 1;
+        expect(() => validateAnchors(a, bank)).toThrow(
+          `${tier} evidence allows at most ${max}/5 whole points`,
+        );
+      }
+    },
+  );
   it("caps confidence after three reductions and caps weak core despite high totals", () => {
     const a = fixtureAnchors();
     a.seniority_inferable = false;

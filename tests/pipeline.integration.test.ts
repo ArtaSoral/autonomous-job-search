@@ -48,6 +48,40 @@ function fixtureModel(counter: Record<string, number> = {}): ModelCall {
   };
 }
 describe("Evaluation integration and provider failure handling", () => {
+  it("stores separate valid guardrail IDs from combined model references", async () => {
+    const id = addManualPosting(
+      "Own roadmap and workflow requirements; guardrail reference fixture.",
+    );
+    const fixture = fixtureModel();
+    const model: ModelCall = async (task, schema, data, options) => {
+      if (task.startsWith("select evidence")) {
+        const a = fixtureAnchors();
+        a.guardrails_consulted = ["g-08/g-09"];
+        a.guardrail_blocked_credit = [
+          {
+            guardrail: "g-15 and g-20",
+            posting_requirement: "Build automation",
+          },
+        ];
+        const parsed = schema.parse(a);
+        await options?.validate?.(parsed);
+        return parsed;
+      }
+      return fixture(task, schema, data, options);
+    };
+    const result = await evaluateJob(id, model);
+    expect(result.stage).toBe("evaluated");
+    expect(result.anchors?.guardrails_consulted).toEqual(["g-08", "g-09"]);
+    const stored = row<{ anchors: string }>(
+      "SELECT anchors FROM evaluations WHERE job_id=? AND is_current=1",
+      id,
+    )!;
+    expect(JSON.parse(stored.anchors).guardrail_blocked_credit).toEqual([
+      { guardrail: "g-15", posting_requirement: "Build automation" },
+      { guardrail: "g-20", posting_requirement: "Build automation" },
+    ]);
+    expect(getJob(id).review_error).toBeNull();
+  });
   it("stores complete provenance, caches extraction and logs independent reorder checks", async () => {
     const id = addManualPosting(
       "Own a workflow roadmap.\n\nTranslate requirements for engineering.\n\nConfigure intake automation and define KPIs.",
@@ -57,7 +91,53 @@ describe("Evaluation integration and provider failure handling", () => {
       id,
     );
     const counts: Record<string, number> = {};
-    const model = fixtureModel(counts);
+    const fixture = fixtureModel(counts);
+    const model: ModelCall = async (task, schema, data, options) => {
+      if (task.startsWith("select evidence")) {
+        expect(options?.strong).toBe(true);
+        expect(data).toMatchObject({
+          scoring_rubric: {
+            domain_transferability: {
+              weight: 5,
+              max_points_by_evidence_tier: { adjacent: 3, contextual: 1 },
+            },
+          },
+        });
+      }
+      if (task === "verify evaluation credit against bank and guardrails") {
+        const categories = Object.keys(fixtureAnchors().categories).map(
+          (key) => ({
+            key,
+            supported: true,
+            guardrails_violated: [],
+            reason: "Supported",
+          }),
+        );
+        expect(schema.safeParse({ categories }).success).toBe(true);
+        expect(
+          schema.safeParse({
+            categories: [
+              ...categories,
+              { ...categories[0], key: "requirements" },
+            ],
+          }).success,
+        ).toBe(false);
+        expect(
+          schema.safeParse({
+            categories: categories.map((c, n) =>
+              n ? c : { ...c, key: "core_matches" },
+            ),
+          }).success,
+        ).toBe(false);
+        const duplicate = schema.parse({
+          categories: categories.map((c, n) => (n ? c : categories[1])),
+        });
+        await expect(
+          Promise.resolve().then(() => options?.validate?.(duplicate)),
+        ).rejects.toThrow("exactly once");
+      }
+      return fixture(task, schema, data, options);
+    };
     const result = await evaluateJob(id, model);
     expect(result.stage).toBe("evaluated");
     expect(result.computed?.classification).toBe("Excellent");

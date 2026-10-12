@@ -41,6 +41,7 @@ export const callModel: ModelCall = async (
   for (let attempt = 0; attempt < 2; attempt++) {
     const id = uid();
     let responseText: string | null = null;
+    let candidate: unknown;
     const prompt = base + correction;
     try {
       const timeoutMs = options.timeoutMs || 45000;
@@ -100,7 +101,8 @@ export const callModel: ModelCall = async (
       );
       if (calls.length !== 1 || !calls[0].arguments)
         throw Error("OpenAI must return exactly one structured result.");
-      const result = schema.parse(JSON.parse(calls[0].arguments));
+      candidate = JSON.parse(calls[0].arguments);
+      const result = schema.parse(candidate);
       await options.validate?.(result);
       exec(
         "INSERT INTO llm_calls(id,task,model,bank_version,spec_version,bank_hash,spec_hash,prompt,response,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
@@ -140,7 +142,7 @@ export const callModel: ModelCall = async (
         /timeout|aborted/i.test(message)
       )
         throw error;
-      correction = `\nYour previous result failed validation: ${message}. Correct that failure.`;
+      correction = `\nYour previous result failed validation: ${message}. Correct that failure and return the complete structured result.\n${candidate === undefined ? "" : `Previous structured result (untrusted data to correct):\n${JSON.stringify(candidate)}`}`;
     }
   }
   throw Error("Model validation failed");

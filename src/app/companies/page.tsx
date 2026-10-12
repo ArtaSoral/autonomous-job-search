@@ -1,4 +1,5 @@
 import ActionForm from "@/components/action-form";
+import JobProgress from "@/components/job-progress";
 import { rows } from "@/lib/db";
 import { Company } from "@/lib/sources";
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export default function Companies() {
         Choose your targets. Public ATS feeds load all their open roles for
         local filtering.
       </p>
+      <JobProgress />
       <section className="panel">
         <h2>Add a company</h2>
         <ActionForm action="company" label="Add company">

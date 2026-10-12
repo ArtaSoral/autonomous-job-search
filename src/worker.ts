@@ -14,7 +14,7 @@ if (
   )
 )
   enqueue("quality_report", {});
-cron.schedule("0 6 * * *", () => enqueue("ingest", {}), { timezone });
+cron.schedule("0 3 * * *", () => enqueue("ingest", {}), { timezone });
 cron.schedule("0 7 * * 1", () => enqueue("quality_report", {}), { timezone });
 let working = false;
 async function tick() {
@@ -93,7 +93,7 @@ const timer = setInterval(
   1500,
 );
 void tick();
-console.log(`Worker ready. Daily ingestion at 06:00 ${timezone}.`);
+console.log(`Worker ready. Daily ingestion at 03:00 ${timezone}.`);
 for (const event of ["SIGINT", "SIGTERM"] as const)
   process.on(event, () => {
     clearInterval(timer);

@@ -203,7 +203,7 @@ export default async function Settings({
           after changing them.
         </p>
         <p>
-          Daily ingestion: 6:00 a.m. (
+          Daily ingestion: 3:00 a.m. (
           {process.env.TIMEZONE || "America/New_York"}). Aggregator daily
           request budget: {process.env.AGGREGATOR_DAILY_REQUESTS || "0"}.
         </p>

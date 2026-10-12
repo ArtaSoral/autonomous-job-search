@@ -86,6 +86,10 @@ describe("OpenAI Responses compatibility", () => {
       value: 8,
     });
     expect(fetcher).toHaveBeenCalledTimes(2);
+    const retry = JSON.parse(fetcher.mock.calls[1][1].body);
+    expect(retry.input[0].content).toContain(
+      'Previous structured result (untrusted data to correct):\n{"value":"invalid"}',
+    );
     fetcher.mockReset().mockImplementation(async () =>
       streamEvents([
         {

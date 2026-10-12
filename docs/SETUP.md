@@ -2,6 +2,16 @@
 
 The app runs privately at http://127.0.0.1:3000. Use Node.js 24 LTS. This workspace also has a checksum-verified portable Node runtime under the ignored `data/tools` directory; the PowerShell launcher finds it automatically.
 
+## Everyday startup after a restart
+
+Double-click **Start Job Finder.cmd** in the project folder. It starts the app and worker in the background, waits for them to be ready, and opens the dashboard in your browser. No terminal windows need to stay open. Double-clicking Start again opens the dashboard without launching extra processes.
+
+Double-click **Stop Job Finder.cmd** to stop both processes. Closing the browser leaves them running. You can create desktop shortcuts to these two files for easier access.
+
+The launcher uses the existing production build, or development mode if there is no build yet. Logs are saved under `data/launcher`. If you were already running the app in a terminal, stop that instance before using the launcher. After changing app code, rebuild with `.\scripts\run.ps1 build` while the app is stopped.
+
+## Initial setup and manual commands
+
 ```powershell
 Copy-Item .env.example .env   # Only if .env does not already exist
 .\scripts\run.ps1 install
@@ -33,7 +43,7 @@ Optional direct API access can be configured with `OPENAI_AUTH_MODE=api`, `OPENA
 
 Settings displays the active connection mode. API mode reports key and model configuration without showing credentials; ChatGPT plan mode uses the signed-in account's saved model choices. Historical authorship and source IDs in the original resume bank remain intact when the runtime model provider changes.
 
-Add your own target companies under Companies. The app starts with an empty list. Each company needs its ATS and public board token/company identifier. The worker schedules ingestion at 6:00 a.m. and weekly reports on Monday at 7:00 a.m., using `TIMEZONE` (default `America/New_York`). It runs only while its process is active. The queue persists through restarts; failed tasks appear in Quality & feedback.
+Add your own target companies under Companies. The app starts with an empty list. Each company needs its ATS and public board token/company identifier. The worker schedules ingestion at 3:00 a.m. and weekly reports on Monday at 7:00 a.m., using `TIMEZONE` (default `America/New_York`). It runs only while its process is active. The queue persists through restarts; failed tasks appear in Quality & feedback.
 
 Aggregator requests default to **zero**. Set JSearch and/or Adzuna credentials plus a daily `AGGREGATOR_DAILY_REQUESTS` budget that fits your subscription. Public-board reads use configurable `SOURCE_DELAY_MS` (default 1,500 ms). Optional per-host delay overrides use `SOURCE_DELAY_BOARDS_API_MS`, `SOURCE_DELAY_API_MS`, and `SOURCE_DELAY_JSEARCH_MS`. Aggregator queries rotate across title families and responsibility combinations derived from the runtime inputs. No applications are submitted automatically.
 

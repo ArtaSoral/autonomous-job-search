@@ -6,6 +6,23 @@ const strings = z.array(z.string());
 export const categoryKeys = Object.keys(
   scoring.categories,
 ) as (keyof typeof scoring.categories)[];
+export const scoringRubric = Object.fromEntries(
+  categoryKeys.map((key) => {
+    const category = scoring.categories[key];
+    return [
+      key,
+      {
+        ...category,
+        max_points_by_evidence_tier: Object.fromEntries(
+          Object.entries(scoring.evidence_tier_caps).map(([tier, cap]) => [
+            tier,
+            Math.floor(category.weight * cap),
+          ]),
+        ),
+      },
+    ];
+  }),
+);
 const tier = z.enum([
   "direct",
   "adjacent",
@@ -96,12 +113,33 @@ export const anchorsSchema = z.object({
   company_type: z.string().nullable(),
 });
 export type Anchors = z.infer<typeof anchorsSchema>;
+/** Split only unambiguous lists of known IDs; preserve invalid text for validation. */
+export function normalizeGuardrailReferences(a: Anchors, bank: Bank): Anchors {
+  const allowed = new Set(bank.guardrails.map((guardrail) => guardrail.id));
+  const split = (reference: string) => {
+    const ids = reference
+      .split(/\s*(?:[,/]|\band\b)\s*/)
+      .map((id) => id.trim());
+    return ids.length && ids.every((id) => allowed.has(id))
+      ? [...new Set(ids)]
+      : [reference];
+  };
+  return {
+    ...a,
+    guardrails_consulted: [...new Set(a.guardrails_consulted.flatMap(split))],
+    guardrail_blocked_credit: a.guardrail_blocked_credit.flatMap((blocked) =>
+      split(blocked.guardrail).map((guardrail) => ({ ...blocked, guardrail })),
+    ),
+  };
+}
 /** Remove repeated bullet variants from later core matches without adding credit. */
 export function dedupeCoreMatches(a: Anchors, bank: Bank): Anchors {
   const seenGroups = new Set<string>();
   const core_matches = a.core_matches.flatMap((match) => {
     const bank_ids = match.bank_ids.filter((id) => {
-      const group = bank.bullets.find((bullet) => bullet.id === id)?.variant_group;
+      const group = bank.bullets.find(
+        (bullet) => bullet.id === id,
+      )?.variant_group;
       if (!group) return true;
       if (seenGroups.has(group)) return false;
       seenGroups.add(group);
@@ -177,11 +215,13 @@ export function validateAnchors(a: Anchors, bank: Bank) {
       throw Error(`Invalid ${key} points or anchor`);
     if (c.points !== c.anchor && !c.between_anchors_reason)
       throw Error(`${key}: partial anchor score needs a reason`);
-    if (
-      c.points >
-      Math.floor(config.weight * scoring.evidence_tier_caps[c.evidence_tier])
-    )
-      throw Error(`${key}: evidence tier credit ceiling exceeded`);
+    const maxPoints = Math.floor(
+      config.weight * scoring.evidence_tier_caps[c.evidence_tier],
+    );
+    if (c.points > maxPoints)
+      throw Error(
+        `${key}: evidence tier credit ceiling exceeded; ${c.evidence_tier} evidence allows at most ${maxPoints}/${config.weight} whole points, received ${c.points}. Reduce points to the allowed ceiling or below; do not upgrade the evidence tier without supporting bank facts.`,
+      );
     if (
       c.points > 0 &&
       (!c.bank_ids.length ||

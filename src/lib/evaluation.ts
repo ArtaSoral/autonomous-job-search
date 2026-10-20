@@ -167,6 +167,27 @@ export const classificationOrder: Classification[] = [
   "Weak",
   "Disqualified",
 ];
+// Guardrail phrases in explicit limitations are not positive capability claims.
+// Keep the exception local to the matched phrase; a later clause can still
+// contain a forbidden assertion. Ambiguous wording remains subject to review.
+function assertsPattern(claim: string, pattern: RegExp) {
+  // Overlapping matches keep a negated phrase from consuming a later positive
+  // assertion matched by the same guardrail expression.
+  for (const match of claim.matchAll(
+    new RegExp(`(?=${pattern.source})`, "gi"),
+  )) {
+    const prefix = claim
+      .slice(0, match.index)
+      .split(/[,.;:!?\n]|\b(?:but|however|yet|and)\b/i)
+      .at(-1)!;
+    const negated =
+      /\b(?:no|never|without|not(?!\s+(?:only|just|merely|simply)\b))(?:\s+[\w'-]+){0,5}\s+$/i.test(
+        prefix,
+      );
+    if (!negated) return true;
+  }
+  return false;
+}
 export function validateAnchors(a: Anchors, bank: Bank) {
   const usable = [
     ...bank.bullets.filter((b) => b.usable_in_generation),
@@ -260,7 +281,10 @@ export function validateAnchors(a: Anchors, bank: Bank) {
     };
     for (const g of bank.guardrails)
       if (
-        patterns[g.id]?.test(c.candidate_claims.join(" ")) &&
+        patterns[g.id] &&
+        c.candidate_claims.some((claim) =>
+          assertsPattern(claim, patterns[g.id]),
+        ) &&
         (g.id !== "g-23" || c.evidence_tier === "direct")
       )
         throw Error(`${key}: guardrailed credit ${g.id}`);
@@ -280,8 +304,9 @@ export function validateAnchors(a: Anchors, bank: Bank) {
     if (!bank.guardrails.some((b) => b.id === g.guardrail))
       throw Error(`Invalid guardrail ${g.guardrail}`);
   const uses = new Map<string, string[]>();
-  for (const key of categoryKeys)
-    for (const fact of a.categories[key].posting_evidence) {
+  for (const key of categoryKeys) {
+    if (!a.categories[key].points) continue;
+    for (const fact of new Set(a.categories[key].posting_evidence)) {
       const prior = uses.get(fact) || [];
       if (prior.length && !a.categories[key].double_count_justification)
         throw Error(
@@ -289,14 +314,17 @@ export function validateAnchors(a: Anchors, bank: Bank) {
         );
       uses.set(fact, [...prior, key]);
     }
-  const tooling = categoryKeys.filter((key) =>
-    a.categories[key].bank_ids.some((id) => {
-      const b = bank.bullets.find((b) => b.id === id);
-      return (
-        b?.accomplishment_id === "acc-fab-work-mgmt" ||
-        ["sk-jira", "sk-asana"].includes(id)
-      );
-    }),
+  }
+  const tooling = categoryKeys.filter(
+    (key) =>
+      a.categories[key].points > 0 &&
+      a.categories[key].bank_ids.some((id) => {
+        const b = bank.bullets.find((b) => b.id === id);
+        return (
+          b?.accomplishment_id === "acc-fab-work-mgmt" ||
+          ["sk-jira", "sk-asana"].includes(id)
+        );
+      }),
   );
   if (
     tooling.length > 2 &&

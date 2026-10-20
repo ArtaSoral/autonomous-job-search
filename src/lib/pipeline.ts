@@ -180,6 +180,8 @@ async function fullEvaluation(
       extraction,
       scoring_rubric: scoringRubric,
       allowed_guardrail_ids: i.bank.guardrails.map((guardrail) => guardrail.id),
+      citation_policy:
+        "bank_ids contain evidence records only, never g- guardrail IDs. Put guardrail IDs in guardrails_consulted or guardrail_blocked_credit instead. candidate_claims contain only factual candidate capabilities supported by those bank_ids; explain missing capabilities in withheld_reason, gaps, or requirements. A positive ramp score still requires a supported candidate capability, not only a missing prerequisite.",
       instructions:
         "Every credited candidate_claim must be supported by bank IDs and respect all guardrails. Cite exact IDs of the supplied bank records; career_tenure is a computed summary, not a citation ID, so cite its underlying experience records instead. Select the evidence tier from the supporting facts first. For every category, points must be no greater than scoring_rubric[category].max_points_by_evidence_tier[evidence_tier]. These are whole-point ceilings rounded down, even when a listed anchor is higher. Choose an allowed anchor and explain intermediate points; never upgrade an evidence tier merely to fit a score. Only direct or adjacent evidence may support a core match with positive work_share; omit contextual, listed_only and title_only evidence from substantive core matches. Core matches must cover different substantive responsibilities and may not reuse the same variant_group in separate core matches. If posting evidence is reused in another category, that category needs a double_count_justification explaining its independent credit. Workflow-tooling evidence used in more than two categories needs distinct justifications in every such category. Guardrail references must be exact IDs from allowed_guardrail_ids (for example g-02), with no explanation appended to the ID. Group related gaps; preserve mandatory versus preferred and centrality. Never convert contextual exposure to ownership. domain_tag and company_type describe posting facts only, never invent a preference.",
     },
@@ -219,6 +221,8 @@ async function fullEvaluation(
             allowed_category_keys: categoryKeys,
           },
           {
+            strong: true,
+            timeoutMs: 90000,
             sections: [2, 8, 25],
             bank: context,
             validate: (r) => {

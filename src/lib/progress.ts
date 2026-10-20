@@ -21,6 +21,7 @@ export function jobProgress() {
     SELECT j.id,j.employer,j.title,COALESCE(q.error,j.review_error) AS error,
       CASE
         WHEN q.status IN ('pending','running') THEN q.status
+        WHEN j.review_error IS NOT NULL THEN 'failed'
         WHEN e.is_current=1 AND j.review_error IS NULL
           AND (q.id IS NULL OR e.created_at>=q.created_at) THEN 'complete'
         ELSE COALESCE(q.status,CASE WHEN e.id IS NOT NULL THEN 'complete' ELSE 'unqueued' END)

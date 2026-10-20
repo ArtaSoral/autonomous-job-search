@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "test": "vitest run",
+    "audit:resumes": "tsx scripts/audit-resumes.ts",
     "typecheck": "tsc --noEmit",
     "worker": "tsx src/worker.ts",
     "db:migrate": "tsx scripts/migrate.ts"

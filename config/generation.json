@@ -1,1 +1,11 @@
-{ "roleBulletCaps": [7, 5, 4], "defaultBulletCap": 4, "timeoutMs": 240000 }
+{
+  "roleBulletCaps": [6, 4, 2],
+  "minimumRoleBullets": [4, 2, 1],
+  "defaultBulletCap": 2,
+  "minimumBulletRelevance": 5,
+  "maxBulletsPerAccomplishment": 2,
+  "maxSkills": 12,
+  "maxBulletWords": 45,
+  "maxSummaryWords": 70,
+  "timeoutMs": 360000
+}

@@ -181,6 +181,64 @@ describe("Phase 4 golden scoring and citations", () => {
     expect(() => validateAnchors(a, bank)).toThrow("guardrailed");
   });
   it.each([
+    "Uses ChatGPT for sprint reporting, not a shipped AI product.",
+    "Writes SQL independently, without evidence of advanced SQL.",
+    "Has no experience with API design.",
+  ])("accepts an explicit capability limitation: %s", (claim) => {
+    const a = fixtureAnchors();
+    a.categories.data_kpi_ai.candidate_claims = [claim];
+    expect(() => validateAnchors(a, bank)).not.toThrow();
+  });
+  it.each([
+    "Not only advanced SQL but also warehouse modeling.",
+    "Not just advanced SQL.",
+    "No advanced SQL, but shipped an AI product.",
+    "Without advanced SQL; shipped an AI product.",
+    "No advanced SQL, and API ownership.",
+    "Uses ChatGPT without advanced SQL. Shipped an AI product.",
+    "Not a shipped AI product, but shipped an AI product.",
+    "No production experience but launched an AI product.",
+    "No advanced SQL before, but now writes advanced SQL.",
+  ])("still rejects a positive forbidden assertion: %s", (claim) => {
+    const a = fixtureAnchors();
+    a.categories.data_kpi_ai.candidate_claims = [claim];
+    expect(() => validateAnchors(a, bank)).toThrow("guardrailed");
+  });
+  it("does not match a forbidden phrase across separate candidate claims", () => {
+    const a = fixtureAnchors();
+    a.categories.data_kpi_ai.candidate_claims = [
+      "Created reporting requirements for production.",
+      "AI product training certification is recorded.",
+    ];
+    expect(() => validateAnchors(a, bank)).not.toThrow();
+  });
+  it("counts evidence reuse only across categories receiving credit", () => {
+    const a = fixtureAnchors();
+    const first = a.categories.core_responsibility;
+    first.posting_evidence.push(first.posting_evidence[0]);
+    const zero = a.categories.workflow_automation;
+    zero.points = zero.anchor = 0;
+    zero.withheld_reason = "No relevant automation duty";
+    zero.posting_evidence = [...first.posting_evidence];
+    expect(() => validateAnchors(a, bank)).not.toThrow();
+    zero.points = zero.anchor = 2;
+    expect(() => validateAnchors(a, bank)).toThrow("Repeated posting evidence");
+  });
+  it("keeps zero-credit tooling references out of the double-counting limit", () => {
+    const a = fixtureAnchors();
+    for (const key of [
+      "core_responsibility",
+      "functional_product_capability",
+      "workflow_automation",
+    ] as const)
+      a.categories[key].bank_ids = ["fabuwood-draft-05"];
+    expect(() => validateAnchors(a, bank)).toThrow("Workflow tooling");
+    const zero = a.categories.workflow_automation;
+    zero.points = zero.anchor = 0;
+    zero.withheld_reason = "Tooling is not part of this posting";
+    expect(() => validateAnchors(a, bank)).not.toThrow();
+  });
+  it.each([
     ["direct", 5],
     ["adjacent", 3],
     ["contextual", 1],

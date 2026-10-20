@@ -101,6 +101,24 @@ describe("Job search progress", () => {
     task(recovered, "pending", "2026-10-10T03:00:00Z");
     expect(jobProgress()).toMatchObject({ complete: 0, pending: 1 });
   });
+  it("shows a current review error even when an older queued task completed", () => {
+    const id = addManualPosting(
+      "Failed direct retry after an older completed task",
+    );
+    task(id, "complete", "2026-10-10T01:00:00Z");
+    evaluation(id, "2026-10-10T02:00:00Z");
+    exec(
+      "UPDATE jobs SET review_error='Current evaluation timed out' WHERE id=?",
+      id,
+    );
+    expect(jobProgress()).toMatchObject({
+      complete: 0,
+      failed: 1,
+      failedJobs: [{ id, error: "Current evaluation timed out" }],
+    });
+    task(id, "pending", "2026-10-10T03:00:00Z");
+    expect(jobProgress()).toMatchObject({ failed: 0, pending: 1 });
+  });
   it("aggregates only the latest fetch, separating pulled postings from new jobs", () => {
     exec(
       "INSERT INTO queue(id,kind,payload,status,run_after,created_at) VALUES(?,'ingest','{}','complete',?,?)",

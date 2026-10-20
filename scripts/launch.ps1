@@ -13,9 +13,17 @@ $url = 'http://127.0.0.1:3000'
 # This also makes old state harmless after a computer restart.
 function Get-OwnedProcess($Entry) {
   if (-not $Entry) { return $null }
-  $process = Get-Process -Id $Entry.id -ErrorAction SilentlyContinue
-  if (-not $process -or $process.StartTime.ToUniversalTime().Ticks.ToString() -ne $Entry.started) { return $null }
-  $command = (Get-CimInstance Win32_Process -Filter "ProcessId = $($Entry.id)").CommandLine
+  try {
+    $process = Get-Process -Id $Entry.id -ErrorAction SilentlyContinue
+    if (-not $process) { return $null }
+    # Windows can reuse a saved PID for a service whose StartTime is unavailable.
+    $started = $process.StartTime
+    if (-not $started -or $started.ToUniversalTime().Ticks.ToString() -ne $Entry.started) { return $null }
+    $command = (Get-CimInstance Win32_Process -Filter "ProcessId = $($Entry.id)" -ErrorAction Stop).CommandLine
+  } catch {
+    # Inaccessible or exited processes cannot be verified as ours.
+    return $null
+  }
   if (-not $command -or -not $command.Contains($runScript)) { return $null }
   return $process
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RefreshButton from "@/components/refresh-button";
+import ActionForm from "@/components/action-form";
 import { jobProgress } from "@/lib/progress";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,11 @@ export default function NeedsAttention() {
                     Evaluation failed without a recorded reason.
                   </p>
                 )}
+                <ActionForm
+                  action="evaluate"
+                  values={{ jobId: job.id }}
+                  label="Retry evaluation"
+                />
               </li>
             ))}
           </ul>

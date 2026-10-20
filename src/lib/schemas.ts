@@ -90,6 +90,7 @@ export const lineSchema = z.object({
 });
 export const draftSchema = z.object({
   questions_before_applying: z.array(z.string()).default([]),
+  skill_ids: z.array(z.string()).max(12).optional(),
   summary: z.array(lineSchema).min(1).max(3),
   experience: z.array(lineSchema).min(1),
   cover_letter: z
